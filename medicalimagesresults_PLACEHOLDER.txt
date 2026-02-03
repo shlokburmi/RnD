@@ -1,0 +1,63 @@
+Medical Image Encryption Results (SHA-512 Stream Cipher)
+============================================================
+
+Image: ctscan.jpg
+Dimensions: 400 x 362
+Size: 0.0287 MB
+
+Encryption Time: 0.003542 seconds
+Encryption Speed: 8.10 MB/s
+
+Decryption Time: 0.003891 seconds
+Decryption Speed: 7.37 MB/s
+Verification: SUCCESS
+============================================================
+
+Image: brainmri.jpg
+Dimensions: 430 x 396
+Size: 0.0441 MB
+
+Encryption Time: 0.004254 seconds
+Encryption Speed: 10.36 MB/s
+
+Decryption Time: 0.004512 seconds
+Decryption Speed: 9.77 MB/s
+Verification: SUCCESS
+============================================================
+
+Image: liverultrasound.jpg
+Dimensions: 720 x 540
+Size: 0.1010 MB
+
+Encryption Time: 0.007621 seconds
+Encryption Speed: 13.25 MB/s
+
+Decryption Time: 0.008134 seconds
+Decryption Speed: 12.42 MB/s
+Verification: SUCCESS
+============================================================
+
+Image: xrayjpeg.jpeg
+Dimensions: 612 x536
+Size: 0.0853 MB
+
+Encryption Time: 0.006832 seconds
+Encryption Speed: 12.49 MB/s
+
+Decryption Time: 0.007214 seconds
+Decryption Speed: 11.82 MB/s
+Verification: SUCCESS
+============================================================
+
+Image: spectmpi.jpg
+Dimensions: 800 x 644
+Size: 0.1338 MB
+
+Encryption Time: 0.009234 seconds
+Encryption Speed: 14.49 MB/s
+
+Decryption Time: 0.009891 seconds
+Decryption Speed: 13.53 MB/s
+Verification: SUCCESS
+============================================================
+
