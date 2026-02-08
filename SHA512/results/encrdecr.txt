@@ -1,0 +1,13 @@
+SHA-512 Stream Cipher Performance Analysis
+==========================================
+Image: lenna_grayscale.webp
+Dimensions: 512 x 512
+Size: 0.2500 MB
+
+Encryption Time: 0.014035 seconds
+Encryption Speed: 17.81 MB/s
+
+Decryption Time: 0.019671 seconds
+Decryption Speed: 12.71 MB/s
+
+Verification: SUCCESS (Lossless Decryption)
