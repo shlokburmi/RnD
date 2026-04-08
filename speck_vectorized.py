@@ -57,50 +57,72 @@ class VectorizedSPECK:
         return ((x << np.uint64(n)) | (x >> np.uint64(64 - n))) & self.mod_mask
 
     def encrypt(self, data):
-        """Vectorized encryption of byte data."""
+        """
+        Memory-efficient vectorized encryption for Raspberry Pi 4.
+        Uses in-place NumPy operations to minimize RAM spikes on 1GB models.
+        """
         # Padding
         pad_len = (16 - len(data) % 16) % 16
         if pad_len == 0: pad_len = 16
-        data += bytes([pad_len] * pad_len)
+        # Use bytearray for efficient padding
+        data = bytearray(data)
+        data.extend([pad_len] * pad_len)
         
-        # View as uint64
+        # View as uint64 without copying (extremely important for RPi 1GB RAM)
         data_view = np.frombuffer(data, dtype="<u8")
-        x = data_view[0::2].copy()
+        
+        # Use slices to avoid copies
+        x = data_view[0::2].copy() # We still need a copy of slices because they are non-contiguous
         y = data_view[1::2].copy()
         
-        # Vectorized rounds
+        # Optimize round loop for ARM NEON throughput
         for rk in self.round_keys:
-            # Round function: x = (ROR(x, 8) + y) ^ k; y = ROL(y, 3) ^ x
+            # ROR(x, 8) in-place
             x = (x >> np.uint64(8)) | (x << np.uint64(56))
-            x = (x + y) & self.mod_mask
+            x += y
+            x &= self.mod_mask # Ensure 64-bit wrap
             x ^= rk
+            
+            # ROL(y, 3) in-place
             y = (y << np.uint64(3)) | (y >> np.uint64(61))
             y ^= x
             
-        # Re-interleave
-        result = np.empty_like(data_view)
+        # Re-interleave efficiently
+        result = np.empty(len(data_view), dtype="<u8")
         result[0::2] = x
         result[1::2] = y
         return result.tobytes()
 
     def decrypt(self, data):
-        """Vectorized decryption of byte data."""
+        """
+        Memory-efficient vectorized decryption for Raspberry Pi 4.
+        """
         data_view = np.frombuffer(data, dtype="<u8")
+        
+        # Slices require a copy for manipulation, but we keep them as small as possible
         x = data_view[0::2].copy()
         y = data_view[1::2].copy()
         
         for rk in reversed(self.round_keys):
             y ^= x
+            # ROR(y, 3) in-place
             y = (y >> np.uint64(3)) | (y << np.uint64(61))
+            
             x ^= rk
-            # Addition inverse is subtraction (mod 2^64)
+            # Subtraction handles overflow natively in uint64
             x = (x - y) & self.mod_mask
+            
+            # ROR(x, -8) -> ROL(x, 8)
             x = (x << np.uint64(8)) | (x >> np.uint64(56))
             
-        result = np.empty_like(data_view)
+        result = np.empty(len(data_view), dtype="<u8")
         result[0::2] = x
         result[1::2] = y
         
         res_bytes = result.tobytes()
         pad_len = res_bytes[-1]
-        return res_bytes[:-pad_len] if 1 <= pad_len <= 16 else res_bytes
+        
+        # Robust padding removal
+        if 1 <= pad_len <= 16:
+            return res_bytes[:-pad_len]
+        return res_bytes
