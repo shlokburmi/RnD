@@ -1,0 +1,8 @@
+COMPARATIVE ANALYSIS: SPECK ENCRYPTION VARIANTS
+==========================================================================================
+Method                         | Enc Time     | Avalanche    | Security Focus
+------------------------------------------------------------------------------------------
+Standard SPECK (Scalar)        | 0.6863s      | N/A (Too slow) | Baseline
+Pure Vectorized SPECK          | 0.0042s      | 50.70%       | Vectorization Gain
+CNN-Integrated Hybrid          | 0.0064s      | 50.70%       | AI + Vectorization
+==========================================================================================

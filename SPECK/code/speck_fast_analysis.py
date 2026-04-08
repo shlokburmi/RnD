@@ -13,36 +13,22 @@ import hashlib
 class SPECKFast:
     """Optimized SPECK128 implementation"""
     
-    def __init__(self, key_bytes, rounds=None):
+    def __init__(self, key_bytes, rounds=32):
+        self.rounds = rounds
         self.mod_mask = 0xFFFFFFFFFFFFFFFF  # 64-bit mask
         
-        # Determine number of words (m) and rounds
-        key_len = len(key_bytes)
-        if key_len <= 16:
-            self.rounds = rounds if rounds else 32
-            key_bytes = key_bytes.ljust(16, b'\x00')
-            m = 2
-        elif key_len <= 24:
-            self.rounds = rounds if rounds else 33
-            key_bytes = key_bytes.ljust(24, b'\x00')
-            m = 3
-        else:
-            self.rounds = rounds if rounds else 34
-            key_bytes = key_bytes.ljust(32, b'\x00')
-            m = 4
-            
-        words = [int.from_bytes(key_bytes[i:i+8], 'little') for i in range(0, m*8, 8)]
+        # Expand key during init
+        if len(key_bytes) < 16:
+            key_bytes = key_bytes + b'\x00' * (16 - len(key_bytes))
         
-        k = words[0]
-        l = words[1:]
+        k = int.from_bytes(key_bytes[0:8], 'little')
+        l = int.from_bytes(key_bytes[8:16], 'little')
         
         self.keys = [k]
-        for i in range(self.rounds - 1):
-            new_l = (k + self._ror(l[i], 8)) & self.mod_mask
-            new_l ^= i
-            l.append(new_l)
-            
-            k = self._rol(k, 3) ^ new_l
+        for i in range(rounds - 1):
+            l = (k + self._ror(l, 8)) & self.mod_mask
+            l ^= i
+            k = self._rol(k, 3) ^ l
             self.keys.append(k)
     
     def _ror(self, x, n):
@@ -136,9 +122,8 @@ def process_image(img_path, key_size, output_file):
     
     print(f"  Size: {w}x{h}, {size_mb:.4f} MB")
     
-    # Generate key depending on key size format
-    key_bytes_len = key_size // 8
-    key = hashlib.sha256(f"SPECK{key_size}_KEY".encode()).digest()[:key_bytes_len]
+    # Generate key
+    key = hashlib.sha256(f"SPECK{key_size}_KEY".encode()).digest()[:16]
     
     # Create cipher
     cipher = SPECKFast(key)
@@ -307,9 +292,7 @@ def main():
     print("=" * 80)
     
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    # The actual Images folder is located at the root of the RnD directory (2 levels up)
-    rnd_root_dir = os.path.dirname(os.path.dirname(current_dir))
-    images_dir = os.path.join(rnd_root_dir, "Images")
+    images_dir = os.path.join(current_dir, "Images")
     
     images = [
         "xrayjpeg.jpeg",
