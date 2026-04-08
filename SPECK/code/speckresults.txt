@@ -1,0 +1,106 @@
+================================================================================================================================================================
+               SPECK LIGHTWEIGHT BLOCK CIPHER - MEDICAL IMAGE ENCRYPTION RESULTS
+                    Block Size: 128 bits | Key Sizes: 128, 192, 256 bits
+================================================================================================================================================================
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+SPECK128/128 ENCRYPTION RESULTS
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+IMAGE NAME                | DIM       | SIZE(MB) | ENC TIME   | ENC SPEED  | DEC TIME   | DEC SPEED  | AVALANCHE | STATUS
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+xrayjpeg.jpeg             | 1176x1032 |   3.4722 |   5.098495 |       0.68 |   5.154044 |       0.67 |    50.28 |   PASS
+spectmpi.jpg              | 976x897   |   2.5047 |   3.810932 |       0.66 |   3.622965 |       0.69 |    46.90 |   PASS
+liverultrasound.jpg       | 720x576   |   1.1865 |   1.780434 |       0.67 |   1.780945 |       0.67 |    57.81 |   PASS
+ctscan.jpg                | 512x512   |   0.7500 |   1.062911 |       0.71 |   1.227731 |       0.61 |    57.81 |   PASS
+brainmri.jpg              | 554x554   |   0.8781 |   1.233379 |       0.71 |   1.298181 |       0.68 |    49.91 |   PASS
+
+SPECK128/128 SUMMARY:
+  • Average Encryption Speed: 0.68 MB/s
+  • Average Decryption Speed: 0.66 MB/s
+  • Average Avalanche Effect: 52.54%
+  • Success Rate: 100.00%
+  • Total Images Processed: 5
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+SPECK128/192 ENCRYPTION RESULTS
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+IMAGE NAME                | DIM       | SIZE(MB) | ENC TIME   | ENC SPEED  | DEC TIME   | DEC SPEED  | AVALANCHE | STATUS
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+xrayjpeg.jpeg             | 1176x1032 |   3.4722 |   5.477318 |       0.63 |   5.317558 |       0.65 |    49.70 |   PASS
+spectmpi.jpg              | 976x897   |   2.5047 |   3.748949 |       0.67 |   3.805501 |       0.66 |    54.63 |   PASS
+liverultrasound.jpg       | 720x576   |   1.1865 |   1.883061 |       0.63 |   1.820728 |       0.65 |    57.81 |   PASS
+ctscan.jpg                | 512x512   |   0.7500 |   1.146215 |       0.65 |   1.310995 |       0.57 |    57.81 |   PASS
+brainmri.jpg              | 554x554   |   0.8781 |   1.296777 |       0.68 |   1.356063 |       0.65 |    49.94 |   PASS
+
+SPECK128/192 SUMMARY:
+  • Average Encryption Speed: 0.65 MB/s
+  • Average Decryption Speed: 0.64 MB/s
+  • Average Avalanche Effect: 53.98%
+  • Success Rate: 100.00%
+  • Total Images Processed: 5
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+SPECK128/256 ENCRYPTION RESULTS
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+IMAGE NAME                | DIM       | SIZE(MB) | ENC TIME   | ENC SPEED  | DEC TIME   | DEC SPEED  | AVALANCHE | STATUS
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+xrayjpeg.jpeg             | 1176x1032 |   3.4722 |   5.528592 |       0.63 |   5.470324 |       0.63 |    50.14 |   PASS
+spectmpi.jpg              | 976x897   |   2.5047 |   3.982409 |       0.63 |   3.903936 |       0.64 |    48.45 |   PASS
+liverultrasound.jpg       | 720x576   |   1.1865 |   1.888797 |       0.63 |   2.069352 |       0.57 |    42.19 |   PASS
+ctscan.jpg                | 512x512   |   0.7500 |   1.247847 |       0.60 |   1.323149 |       0.57 |    42.19 |   PASS
+brainmri.jpg              | 554x554   |   0.8781 |   1.370113 |       0.64 |   1.495721 |       0.59 |    49.76 |   PASS
+
+SPECK128/256 SUMMARY:
+  • Average Encryption Speed: 0.63 MB/s
+  • Average Decryption Speed: 0.60 MB/s
+  • Average Avalanche Effect: 46.55%
+  • Success Rate: 100.00%
+  • Total Images Processed: 5
+
+================================================================================================================================================================
+OVERALL SUMMARY - ALL SPECK VARIANTS
+================================================================================================================================================================
+
+Variant              | Avg Enc Speed   | Avg Dec Speed   | Avg Avalanche   | Images  
+-------------------------------------------------------------------------------------
+SPECK128/128         |        0.68 MB/s |        0.66 MB/s |       52.54 %    | 5       
+SPECK128/192         |        0.65 MB/s |        0.64 MB/s |       53.98 %    | 5       
+SPECK128/256         |        0.63 MB/s |        0.60 MB/s |       46.55 %    | 5       
+
+
+================================================================================================================================================================
+KEY FINDINGS
+================================================================================================================================================================
+
+1. AVALANCHE EFFECT (Key Sensitivity):
+   • SPECK128/128: 52.54% - Single bit key change causes ~52.5% ciphertext change
+   • SPECK128/192: 53.98% - Single bit key change causes ~54.0% ciphertext change
+   • SPECK128/256: 46.55% - Single bit key change causes ~46.5% ciphertext change
+
+2. ENCRYPTION PERFORMANCE:
+   • SPECK128/128: Encryption 0.68 MB/s, Decryption 0.66 MB/s
+   • SPECK128/192: Encryption 0.65 MB/s, Decryption 0.64 MB/s
+   • SPECK128/256: Encryption 0.63 MB/s, Decryption 0.60 MB/s
+
+3. ALGORITHM CHARACTERISTICS:
+   • SPECK: Lightweight block cipher optimized for IoT and embedded systems
+   • Block Size: 128 bits (maximum for SPECK128)
+   • Key Sizes Tested: 128, 192, and 256 bits
+   • All variants achieve 100% lossless encryption/decryption
+
+4. SECURITY ANALYSIS:
+   • All SPECK variants demonstrate excellent avalanche effect (>40%)
+   • Ideal avalanche effect is ~50% (strong diffusion property)
+   • Key sensitivity confirms cryptographic strength
+   • Suitable for medical image confidentiality requirements
+
+5. PERFORMANCE INSIGHTS:
+   • Total image encryptions performed: 15
+   • All encryption/decryption operations successful
+   • SPECK shows consistent performance across different key sizes
+   • Lightweight design makes it suitable for resource-constrained devices
+
+================================================================================================================================================================
+Analysis completed: 2026-03-11 01:52:15
+================================================================================================================================================================

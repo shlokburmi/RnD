@@ -1,0 +1,29 @@
+SPECK IOT VECTORIZED PERFORMANCE LOG (Raspberry Pi 4 - 1GB Edition)
+================================================================================
+
+[SPECK128/128 TESTS]
+FILE NAME            | FORMAT   | ENC(MB/s)| DEC(MB/s)| AVAL %| STATUS
+--------------------------------------------------------------------------------
+xrayjpeg.jpeg        |    3.47MB |      3.4 |      4.2 |  50.3% | PASS
+spectmpi.jpg         |    2.50MB |      4.0 |      4.4 |  41.5% | PASS
+liverultrasound.jpg  |    1.19MB |      3.5 |      3.5 |  43.8% | PASS
+ctscan.jpg           |    0.75MB |      3.5 |      2.3 |  43.8% | PASS
+brainmri.jpg         |    0.88MB |      3.9 |      2.3 |  50.3% | PASS
+
+[SPECK128/192 TESTS]
+FILE NAME            | FORMAT   | ENC(MB/s)| DEC(MB/s)| AVAL %| STATUS
+--------------------------------------------------------------------------------
+xrayjpeg.jpeg        |    3.47MB |      2.1 |      3.0 |  50.0% | PASS
+spectmpi.jpg         |    2.50MB |      3.1 |      4.0 |  53.9% | PASS
+liverultrasound.jpg  |    1.19MB |      4.5 |      4.6 |  46.9% | PASS
+ctscan.jpg           |    0.75MB |      3.9 |      3.9 |  46.9% | PASS
+brainmri.jpg         |    0.88MB |      2.8 |      3.9 |  49.8% | PASS
+
+[SPECK128/256 TESTS]
+FILE NAME            | FORMAT   | ENC(MB/s)| DEC(MB/s)| AVAL %| STATUS
+--------------------------------------------------------------------------------
+xrayjpeg.jpeg        |    3.47MB |      4.0 |      4.1 |  50.2% | PASS
+spectmpi.jpg         |    2.50MB |      3.2 |      4.3 |  48.4% | PASS
+liverultrasound.jpg  |    1.19MB |      3.3 |      4.0 |  46.9% | PASS
+ctscan.jpg           |    0.75MB |      3.4 |      3.9 |  46.9% | PASS
+brainmri.jpg         |    0.88MB |      2.9 |      2.9 |  49.7% | PASS
