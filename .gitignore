@@ -1,0 +1,15 @@
+# Ignore dataset folders
+BCSS/
+BCSS_512/
+
+# Or if you only want specific subfolders:
+BCSS/train/
+BCSS/test/
+BCSS/train_mask/
+BCSS/val/
+BCSS/val_mask/
+
+BCSS_512/train_512/
+BCSS_512/train_mask_512/
+BCSS_512/val_512/
+BCSS_512/val_mask_512/
