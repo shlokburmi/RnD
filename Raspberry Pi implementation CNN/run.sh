@@ -1,4 +1,4 @@
-/#!/bin/bash
+#!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
 # run.sh  —  Raspberry Pi 4 launcher for CNN-SPECK batch processor
 #

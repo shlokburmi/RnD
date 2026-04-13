@@ -18,9 +18,18 @@ from speck_vectorized import VectorizedSPECK
 # ── Pi-specific global: cap OpenCV threads to avoid RAM pressure ──────────────
 cv2.setNumThreads(2)
 
-# ── Tuneable constants ────────────────────────────────────────────────────────
-MAX_PIXELS   = 1_000_000   # ~1 MP cap; resize larger images before processing
-IMAGES_DIR   = "images"
+# ── CONFIGURE YOUR DATASET PATH HERE ────────────────────────────────────────
+# Change this to the FULL path of your dataset folder on the Raspberry Pi.
+# Examples:
+#   IMAGES_DIR = "/home/pi/dataset"          ← absolute path (recommended)
+#   IMAGES_DIR = "images"                    ← folder inside this project dir
+#   IMAGES_DIR = "/media/pi/USB/my_dataset" ← USB drive
+#
+# You can also override at runtime without editing this file:
+#   IMAGES_DIR=/home/pi/my_images python3 batch_process.py
+# ─────────────────────────────────────────────────────────────────────────────
+IMAGES_DIR   = os.environ.get("IMAGES_DIR", "images")   # ← CHANGE "images" to your path
+
 RESULTS_FILE = "cnnresults.txt"
 KEY          = b"SecureEngine2026"
 IMAGE_EXTS   = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff')
