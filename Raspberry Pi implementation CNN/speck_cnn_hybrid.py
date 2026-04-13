@@ -69,7 +69,7 @@ class IntegratedSecureSpeck:
 
         # ── 1. CNN ROI Detection ──
         mask = self.segmenter.get_roi_mask(img)
-        mask_copy = mask.copy() # Return copy for metrics/decryption
+        mask_copy = mask.copy()
         roi_indices = np.where(mask == 1)
         roi_pixels  = img[roi_indices]
 
@@ -83,26 +83,33 @@ class IntegratedSecureSpeck:
         del dynamic_cipher
 
         # ── 3. Selective Encryption write-back ──
-        enc_roi_array = np.frombuffer(encrypted_roi[:roi_pixels.size], dtype=np.uint8)
-        img[roi_indices] = enc_roi_array.reshape(roi_pixels.shape)
-        del enc_roi_array, encrypted_roi, roi_pixels
+        # Ensure we don't overflow the original ROI size mapping
+        enc_roi_flat = np.frombuffer(encrypted_roi, dtype=np.uint8)[:roi_pixels.size]
+        img[roi_indices] = enc_roi_flat.reshape(roi_pixels.shape)
+        del enc_roi_flat, encrypted_roi, roi_pixels
         gc.collect()
 
         # ── 4. Background Diffusion ──
-        bg_indices = np.where(mask == 0)
+        # Fix coordinates for robust indexing
+        bg_rows, bg_cols = np.where(mask == 0)
         keystream  = hashlib.sha256(self.key).digest()
         chunk_size = max(1, 1_000_000 // channels)
-        bg_len     = len(bg_indices[0])
+        bg_len     = len(bg_rows)
 
         for i in range(0, bg_len, chunk_size):
             end    = min(i + chunk_size, bg_len)
             ks_len = (end - i) * channels
             ks     = (keystream * (ks_len // 32 + 1))[:ks_len]
             chunk  = np.frombuffer(ks, dtype=np.uint8)
+            
+            # Use separate row/column arrays for slice-like indexing
+            curr_rows = bg_rows[i:end]
+            curr_cols = bg_cols[i:end]
+            
             if channels > 1:
-                img[bg_indices[0][i:end], bg_indices[1][i:end], :] ^= chunk.reshape(-1, channels)
+                img[curr_rows, curr_cols, :] ^= chunk.reshape(-1, channels)
             else:
-                img[bg_indices[0][i:end], bg_indices[1][i:end]] ^= chunk
+                img[curr_rows, curr_cols] ^= chunk
             del chunk
 
         end_time = time.perf_counter()
@@ -117,72 +124,42 @@ class IntegratedSecureSpeck:
         channels = img.shape[2] if len(img.shape) == 3 else 1
 
         # ── 1. Background Diffusion Reverse ──
-        bg_indices = np.where(mask == 0)
+        bg_rows, bg_cols = np.where(mask == 0)
         keystream = hashlib.sha256(self.key).digest()
         chunk_size = max(1, 1_000_000 // channels)
-        bg_len = len(bg_indices[0])
+        bg_len = len(bg_rows)
 
         for i in range(0, bg_len, chunk_size):
             end = min(i + chunk_size, bg_len)
             ks_len = (end - i) * channels
             ks = (keystream * (ks_len // 32 + 1))[:ks_len]
             chunk = np.frombuffer(ks, dtype=np.uint8)
+            
+            curr_rows = bg_rows[i:end]
+            curr_cols = bg_cols[i:end]
+            
             if channels > 1:
-                img[bg_indices[0][i:end], bg_indices[1][i:end], :] ^= chunk.reshape(-1, channels)
+                img[curr_rows, curr_cols, :] ^= chunk.reshape(-1, channels)
             else:
-                img[bg_indices[0][i:end], bg_indices[1][i:end]] ^= chunk
+                img[curr_rows, curr_cols] ^= chunk
             del chunk
 
         # ── 2. ROI Selective Decryption ──
         roi_indices = np.where(mask == 1)
-        # Note: Dynamic decryption requires the original state or specific protocol.
-        # For evaluation, we simulate the decryption time.
-        # In this specific hybrid approach, content-based keys are tricky for decryption 
-        # unless ROI is decrypted first with a fixed key or original ROI sent in metadata.
-        # Here we simulate the workload for research comparison.
-        
-        # We need the roi_pixels as they were *after* background diffusion reverse 
-        # but *before* ROI decryption.
         roi_pixels = img[roi_indices]
-        # In this simulation, we use the fact that ROI key was derived from PLAIN ROI.
-        # To truly decrypt, one would need to store the dynamic_key or use a two-pass approach.
-        # We perform the workload to measure duration accurately.
         
-        dummy_key = hashlib.sha256(self.key).digest() # Simulation placeholder
+        # We simulate the workload for decryption as true dynamic content-derived 
+        # keys require the original content (usually handled via a separate header or fixed key).
+        dummy_key = hashlib.sha256(self.key).digest() 
         dynamic_cipher = VectorizedSPECK(dummy_key, key_size=256)
         decrypted_roi = dynamic_cipher.decrypt(roi_pixels.tobytes())
         del dynamic_cipher
 
-        dec_roi_array = np.frombuffer(decrypted_roi[:roi_pixels.size], dtype=np.uint8)
-        img[roi_indices] = dec_roi_array.reshape(roi_pixels.shape)
+        dec_roi_flat = np.frombuffer(decrypted_roi, dtype=np.uint8)[:roi_pixels.size]
+        img[roi_indices] = dec_roi_flat.reshape(roi_pixels.shape)
         
-        del dec_roi_array, decrypted_roi, roi_pixels
+        del dec_roi_flat, decrypted_roi, roi_pixels
         gc.collect()
 
         end_time = time.perf_counter()
         return img, (end_time - start_time)
-
-def main():
-    print("="*80)
-    print("CNN-INTEGRATED VECTORIZED SPECK ENCRYPTION SYSTEM")
-    print("="*80)
-    images_dir = "images"
-    image_name = "brainmri.jpg" 
-    img_path = os.path.join(images_dir, image_name)
-    if not os.path.exists(img_path): return
-
-    sec_speck = IntegratedSecureSpeck(b"SecureEngine2026")
-    enc_img, mask, duration = sec_speck.encrypt_adaptive(img_path)
-    
-    if enc_img is not None:
-        print(f"✓ Encryption Time: {duration:.4f} seconds")
-        dec_img, dec_duration = sec_speck.decrypt_adaptive(enc_img, mask)
-        print(f"✓ Decryption Time: {dec_duration:.4f} seconds")
-        
-        output_dir = "cnn_speck_output"
-        os.makedirs(output_dir, exist_ok=True)
-        cv2.imwrite(os.path.join(output_dir, "encrypted_hybrid.jpg"), enc_img)
-        cv2.imwrite(os.path.join(output_dir, "decrypted_hybrid.jpg"), dec_img)
-
-if __name__ == "__main__":
-    main()

@@ -33,20 +33,13 @@ class VectorizedSPECK:
         
         self.round_keys = [np.uint64(k)]
         for i in range(self.rounds - 1):
-            # i is used directly in round function
             l_val = l[i % (m-1)]
-            
-            # Round function for key expansion
             new_l = (self._ror_scalar(l_val, 8) + k) & self.mod_mask
             new_l ^= np.uint64(i)
-            
-            # Update key words
             if m > 2:
-                # For m > 2, we update the list of l words
                 l.append(new_l)
             else:
                 l[0] = new_l
-                
             k = (self._rol_scalar(k, 3) ^ new_l) & self.mod_mask
             self.round_keys.append(np.uint64(k))
 
@@ -59,35 +52,30 @@ class VectorizedSPECK:
     def encrypt(self, data):
         """
         Memory-efficient vectorized encryption for Raspberry Pi 4.
-        Uses in-place NumPy operations to minimize RAM spikes on 1GB models.
         """
-        # Padding
-        pad_len = (16 - len(data) % 16) % 16
-        if pad_len == 0: pad_len = 16
-        # Use bytearray for efficient padding
-        data = bytearray(data)
-        data.extend([pad_len] * pad_len)
+        # Ensure data is a multiple of 16 for block cipher (128-bit blocks)
+        pad_len = (16 - (len(data) % 16)) % 16
+        if pad_len > 0:
+            data = bytearray(data)
+            data.extend([pad_len] * pad_len)
+        elif len(data) == 0:
+            data = bytearray(b'\x10' * 16)
         
-        # View as uint64 without copying (extremely important for RPi 1GB RAM)
+        # View as uint64
         data_view = np.frombuffer(data, dtype="<u8")
         
-        # Use slices to avoid copies
-        x = data_view[0::2].copy() # We still need a copy of slices because they are non-contiguous
+        # Slit into left/right words
+        x = data_view[0::2].copy()
         y = data_view[1::2].copy()
         
-        # Optimize round loop for ARM NEON throughput
         for rk in self.round_keys:
-            # ROR(x, 8) in-place
             x = (x >> np.uint64(8)) | (x << np.uint64(56))
             x += y
-            x &= self.mod_mask # Ensure 64-bit wrap
+            x &= self.mod_mask
             x ^= rk
-            
-            # ROL(y, 3) in-place
             y = (y << np.uint64(3)) | (y >> np.uint64(61))
             y ^= x
             
-        # Re-interleave efficiently
         result = np.empty(len(data_view), dtype="<u8")
         result[0::2] = x
         result[1::2] = y
@@ -97,22 +85,26 @@ class VectorizedSPECK:
         """
         Memory-efficient vectorized decryption for Raspberry Pi 4.
         """
+        # Buffer alignment check for uint64
+        rem = len(data) % 8
+        if rem != 0:
+            data = bytearray(data)
+            data.extend([0] * (8 - rem))
+
         data_view = np.frombuffer(data, dtype="<u8")
         
-        # Slices require a copy for manipulation, but we keep them as small as possible
+        # In case data length is not a multiple of 16 (incomplete block)
+        if len(data_view) % 2 != 0:
+            data_view = np.append(data_view, np.uint64(0))
+
         x = data_view[0::2].copy()
         y = data_view[1::2].copy()
         
         for rk in reversed(self.round_keys):
             y ^= x
-            # ROR(y, 3) in-place
             y = (y >> np.uint64(3)) | (y << np.uint64(61))
-            
             x ^= rk
-            # Subtraction handles overflow natively in uint64
             x = (x - y) & self.mod_mask
-            
-            # ROR(x, -8) -> ROL(x, 8)
             x = (x << np.uint64(8)) | (x >> np.uint64(56))
             
         result = np.empty(len(data_view), dtype="<u8")
@@ -120,9 +112,9 @@ class VectorizedSPECK:
         result[1::2] = y
         
         res_bytes = result.tobytes()
+        if len(res_bytes) == 0: return b''
         pad_len = res_bytes[-1]
         
-        # Robust padding removal
         if 1 <= pad_len <= 16:
             return res_bytes[:-pad_len]
         return res_bytes

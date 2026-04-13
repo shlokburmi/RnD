@@ -107,8 +107,8 @@ def save_histogram_image(image, output_path):
     bin_w = hist_w // 256
     for i in range(1, 256):
         cv2.line(canvas, 
-                 (bin_w * (i - 1), hist_h - int(hist[i-1])),
-                 (bin_w * i, hist_h - int(hist[i])),
+                 (bin_w * (i - 1), hist_h - int(float(hist[i-1][0]))),
+                 (bin_w * i, hist_h - int(float(hist[i][0]))),
                  (0, 0, 255), 2)
     
     cv2.imwrite(output_path, canvas)
