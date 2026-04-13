@@ -28,7 +28,7 @@ cv2.setNumThreads(2)
 # You can also override at runtime without editing this file:
 #   IMAGES_DIR=/home/pi/my_images python3 batch_process.py
 # ─────────────────────────────────────────────────────────────────────────────
-IMAGES_DIR   = os.environ.get("IMAGES_DIR", "images")   # ← CHANGE "images" to your path
+IMAGES_DIR   = os.environ.get("IMAGES_DIR", "BCSS_512/train_512")   # ← CHANGE "images" to your path
 
 RESULTS_FILE = "cnnresults.txt"
 KEY          = b"SecureEngine2026"
