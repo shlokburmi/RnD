@@ -1,0 +1,16 @@
+CUMULATIVE RESEARCH COMPARISON REPORT
+========================================
+Total Images Processed: 6000
+
+AVERAGE PERFORMANCE METRICS:
+- Avg Encryption Time: 0.0972 s
+- Avg Decryption Time: 0.0889 s
+- Avg Entropy:        7.6104
+- Avg NPCR:           99.82 %
+- Avg UACI:           30.13 %
+- Avg PSNR:           8.53 dB
+
+CORRELATION ANALYSIS (Average):
+- Horizontal: -0.0552
+- Vertical:   0.0154
+- Diagonal:   0.0124
