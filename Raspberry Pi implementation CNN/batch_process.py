@@ -1,7 +1,6 @@
 """
-batch_process.py  — Raspberry Pi 4 (1 GB RAM) optimised build
-Runs the CNN-SPECK hybrid vs standard SPECK on every image in ./images/
-and writes a detailed result table to cnnresults.txt.
+batch_process.py  — Raspberry Pi 4 (1 GB RAM) Comprehensive Research Benchmarking
+Optimized for memory efficiency while calculating multiple security parameters.
 """
 
 import os
@@ -10,41 +9,28 @@ import cv2
 import time
 import numpy as np
 import hashlib
-import math
 from datetime import datetime
 from speck_cnn_hybrid import IntegratedSecureSpeck
-from speck_vectorized import VectorizedSPECK
 
 # ── Pi-specific global: cap OpenCV threads to avoid RAM pressure ──────────────
 cv2.setNumThreads(2)
 
-# ── CONFIGURE YOUR DATASET PATH HERE ────────────────────────────────────────
-# Change this to the FULL path of your dataset folder on the Raspberry Pi.
-# Examples:
-#   IMAGES_DIR = "/home/pi/dataset"          ← absolute path (recommended)
-#   IMAGES_DIR = "images"                    ← folder inside this project dir
-#   IMAGES_DIR = "/media/pi/USB/my_dataset" ← USB drive
-#
-# You can also override at runtime without editing this file:
-#   IMAGES_DIR=/home/pi/my_images python3 batch_process.py
-# ─────────────────────────────────────────────────────────────────────────────
-MAX_PIXELS   = 1_000_000   # ~1 MP cap; resize larger images before processing
-IMAGES_DIR   = os.environ.get("IMAGES_DIR", "/home/yyyuvvvraj/Desktop/R&D/RnD/BCSS_512/train_512")   # ← CHANGE "images" to your path
-
+# ── CONFIGURATION ─────────────────────────────────────────────────────────────
+MAX_PIXELS   = 1_000_000   # ~1 MP cap for RPi 1GB RAM stability
+IMAGES_DIR   = os.environ.get("IMAGES_DIR", "/home/yyyuvvvraj/Desktop/R&D/RnD/BCSS_512/train_512")
 RESULTS_FILE = "cnnresults.txt"
+SUMMARY_FILE = "cumulative_report.txt"
 KEY          = b"SecureEngine2026"
 IMAGE_EXTS   = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff')
 
+HIST_PLAIN_DIR = "histograms_plain"
+HIST_ENC_DIR   = "histograms_encrypted"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Helper utilities
+# Helper utilities for Security Metrics
 # ─────────────────────────────────────────────────────────────────────────────
 
 def safe_resize(img, max_pixels=MAX_PIXELS):
-    """
-    Downscale image if it exceeds max_pixels while preserving aspect ratio.
-    Works in-place on the returned array — no extra copy kept.
-    """
     h, w = img.shape[:2]
     if w * h > max_pixels:
         scale = (max_pixels / (w * h)) ** 0.5
@@ -52,74 +38,80 @@ def safe_resize(img, max_pixels=MAX_PIXELS):
                          interpolation=cv2.INTER_AREA)
     return img
 
-
-def calculate_entropy(image_data):
-    """Shannon entropy of pixel data (bits/pixel)."""
-    if not isinstance(image_data, np.ndarray):
-        image_data = np.frombuffer(image_data, dtype=np.uint8)
-    flat = image_data.flatten()
-    if len(flat) == 0:
-        return 0.0
+def calculate_entropy(image):
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    flat = image.flatten()
+    if len(flat) == 0: return 0.0
     counts = np.bincount(flat, minlength=256)
-    probs  = counts[counts > 0] / len(flat)
+    probs = counts[counts > 0] / len(flat)
     return float(-np.sum(probs * np.log2(probs)))
 
+def calculate_psnr(original, encrypted):
+    mse = np.mean((original.astype(np.float32) - encrypted.astype(np.float32)) ** 2)
+    if mse == 0: return 100.0
+    return 20 * np.log10(255.0 / np.sqrt(mse))
 
-def calculate_avalanche(engine, img_path):
-    """
-    Bit-change ratio when one LSB of the centre pixel is flipped.
-    Uses a temp file written to /tmp to avoid cluttering the project dir.
-    """
-    img = cv2.imread(img_path)
-    if img is None:
-        return 0.0
-    img = safe_resize(img)
+def calculate_npcr(original, encrypted):
+    diff = (original != encrypted).astype(np.float32)
+    return (np.sum(diff) / original.size) * 100.0
 
-    c1, _, _ = engine.encrypt_adaptive(img_path)
+def calculate_uaci(original, encrypted):
+    diff = np.abs(original.astype(np.float32) - encrypted.astype(np.float32))
+    return (np.sum(diff) / (original.size * 255.0)) * 100.0
 
-    img_mod = img.copy()
-    mid_r, mid_c = img_mod.shape[0] // 2, img_mod.shape[1] // 2
-    if len(img_mod.shape) == 3:
-        img_mod[mid_r, mid_c, 0] ^= 1
-    else:
-        img_mod[mid_r, mid_c] ^= 1
+def calculate_correlation(image):
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    img_data = image.astype(np.float32)
+    h, w = img_data.shape
+    
+    # Select 3000 random pixel pairs for correlation
+    n = 3000
+    if h*w < n+1: n = (h*w // 2) - 1
+    
+    # Horizontal
+    x_h = img_data[:, :-1].flatten()
+    y_h = img_data[:, 1:].flatten()
+    idx_h = np.random.choice(len(x_h), n, replace=False)
+    corr_h = np.corrcoef(x_h[idx_h], y_h[idx_h])[0, 1]
+    
+    # Vertical
+    x_v = img_data[:-1, :].flatten()
+    y_v = img_data[1:, :].flatten()
+    idx_v = np.random.choice(len(x_v), n, replace=False)
+    corr_v = np.corrcoef(x_v[idx_v], y_v[idx_v])[0, 1]
+    
+    # Diagonal
+    x_d = img_data[:-1, :-1].flatten()
+    y_d = img_data[1:, 1:].flatten()
+    idx_d = np.random.choice(len(x_d), n, replace=False)
+    corr_d = np.corrcoef(x_d[idx_d], y_d[idx_d])[0, 1]
+    
+    return corr_h, corr_v, corr_d
 
-    temp_path = "/tmp/speck_temp_mod.png"
-    cv2.imwrite(temp_path, img_mod)
-    del img_mod  # free immediately
-
-    c2, _, _ = engine.encrypt_adaptive(temp_path)
-    try:
-        os.remove(temp_path)
-    except OSError:
-        pass
-
-    if c1 is None or c2 is None:
-        return 0.0
-
-    diff         = np.bitwise_xor(c1, c2)
-    changed_bits = bin(int.from_bytes(diff.tobytes(), 'little')).count('1')
-    total_bits   = c1.size * 8
-    del c1, c2, diff
-    return (changed_bits / total_bits) * 100.0
-
-
-def run_standard_speck(image_path, key):
-    """Full-image standard SPECK encryption, returns (duration_s, entropy)."""
-    img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-    if img is None:
-        return 0.0, 0.0
-    img = safe_resize(img)
-
-    start  = time.perf_counter()
-    cipher = VectorizedSPECK(hashlib.sha256(key).digest(), key_size=256)
-    enc    = cipher.encrypt(img.tobytes())
-    dur    = time.perf_counter() - start
-
-    ent = calculate_entropy(enc)
-    del img, enc, cipher
-    return dur, ent
-
+def save_histogram_image(image, output_path):
+    # Manual drawing of histogram using OpenCV to avoid dependency on matplotlib
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    hist = cv2.calcHist([image], [0], None, [256], [0, 256])
+    hist_h, hist_w = 400, 512
+    # Create a canvas
+    canvas = np.ones((hist_h, hist_w, 3), dtype=np.uint8) * 255
+    
+    # Normalize histogram to fit in the canvas height
+    cv2.normalize(hist, hist, 0, hist_h - 20, cv2.NORM_MINMAX)
+    
+    bin_w = hist_w // 256
+    for i in range(1, 256):
+        cv2.line(canvas, 
+                 (bin_w * (i - 1), hist_h - int(hist[i-1])),
+                 (bin_w * i, hist_h - int(hist[i])),
+                 (0, 0, 255), 2)
+    
+    cv2.imwrite(output_path, canvas)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Main batch runner
@@ -129,6 +121,9 @@ def run_comprehensive_batch():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     images_dir  = os.path.join(current_dir, IMAGES_DIR)
     results_file = os.path.join(current_dir, RESULTS_FILE)
+    
+    os.makedirs(HIST_PLAIN_DIR, exist_ok=True)
+    os.makedirs(HIST_ENC_DIR, exist_ok=True)
 
     if not os.path.isdir(images_dir):
         print(f"[ERROR] Images directory not found: {images_dir}")
@@ -143,87 +138,91 @@ def run_comprehensive_batch():
 
     hybrid_engine = IntegratedSecureSpeck(KEY)
     total = len(images)
+    
+    summary_data = {
+        'enc_times': [], 'dec_times': [], 'entropy': [],
+        'psnr': [], 'npcr': [], 'uaci': [],
+        'corr_h': [], 'corr_v': [], 'corr_d': []
+    }
 
-    print(f"\n{'='*60}")
-    print(f"  CNN-SPECK Batch Processor — Raspberry Pi 4 (1 GB)")
-    print(f"  Images : {total}  |  Started: {datetime.now():%Y-%m-%d %H:%M:%S}")
-    print(f"{'='*60}\n")
+    print(f"\nStarting Benchmarking of {total} images...")
 
-    with open(results_file, "w", buffering=1) as f:   # line-buffered: survives a crash mid-run
-        # ── Header ─────────────────────────────────────────────────────────
-        f.write("CNN-INTEGRATED VECTORIZED SPECK VS STANDARD SPECK — RASPBERRY PI 4 RESULTS\n")
-        f.write(f"Run Date : {datetime.now():%Y-%m-%d %H:%M:%S}\n")
-        f.write(f"Images   : {total}\n")
-        f.write(f"Key      : {KEY.decode()}\n")
-        f.write("=" * 92 + "\n")
-        f.write(f"{'Image':<20} | {'Type':<8} | {'Time(s)':<9} | {'Entropy':<8} | {'Avalanche':<12} | {'Pixels'}\n")
-        f.write("-" * 92 + "\n")
-        f.flush()
+    with open(results_file, "w", buffering=1) as f:
+        f.write("CNN-INTEGRATED SPECK COMPREHENSIVE SECURITY REPORT\n")
+        f.write("-" * 120 + "\n")
+        f.write(f"{'Image':<15} | {'Enc_T(s)':<8} | {'Dec_T(s)':<8} | {'Entp':<6} | {'NPCR%':<6} | {'UACI%':<6} | {'PSNR':<6} | {'Corr_H':<6} | {'Corr_V':<6} | {'Corr_D':<6}\n")
+        f.write("-" * 120 + "\n")
 
         for idx, image_name in enumerate(images, 1):
             img_path = os.path.join(images_dir, image_name)
-            print(f"[{idx:>3}/{total}] Processing: {image_name}")
+            print(f"[{idx}/{total}] {image_name}")
 
             try:
-                # ── Read & resize once, reuse for both pipelines ───────────
+                # 1. Plain Image
                 raw = cv2.imread(img_path)
-                if raw is None:
-                    raise ValueError("cv2.imread returned None — file unreadable")
+                if raw is None: continue
                 raw = safe_resize(raw)
-                pixel_count = raw.shape[0] * raw.shape[1]
+                
+                # Save plain histogram
+                save_histogram_image(raw, os.path.join(HIST_PLAIN_DIR, f"{image_name}_hist.png"))
 
-                # ── Save resized copy to a temp path so both methods use same size ──
-                tmp_img_path = f"/tmp/speck_proc_{idx}.png"
-                cv2.imwrite(tmp_img_path, raw)
-                del raw
+                # 2. Encryption
+                enc_img, mask, enc_time = hybrid_engine.encrypt_adaptive(raw)
+                
+                # Save encrypted histogram
+                save_histogram_image(enc_img, os.path.join(HIST_ENC_DIR, f"{image_name}_hist_enc.png"))
+
+                # 3. Decryption
+                dec_img, dec_time = hybrid_engine.decrypt_adaptive(enc_img, mask)
+
+                # 4. Metrics
+                entropy = calculate_entropy(enc_img)
+                psnr = calculate_psnr(raw, enc_img)
+                npcr = calculate_npcr(raw, enc_img)
+                uaci = calculate_uaci(raw, enc_img)
+                ch, cv, cd = calculate_correlation(enc_img)
+
+                # Store for summary
+                summary_data['enc_times'].append(enc_time)
+                summary_data['dec_times'].append(dec_time)
+                summary_data['entropy'].append(entropy)
+                summary_data['psnr'].append(psnr)
+                summary_data['npcr'].append(npcr)
+                summary_data['uaci'].append(uaci)
+                summary_data['corr_h'].append(ch)
+                summary_data['corr_v'].append(cv)
+                summary_data['corr_d'].append(cd)
+
+                # Write detail
+                f.write(f"{image_name:<15} | {enc_time:<8.4f} | {dec_time:<8.4f} | {entropy:<6.4f} | {npcr:<6.2f} | {uaci:<6.2f} | {psnr:<6.2f} | {ch:<6.3f} | {cv:<6.3f} | {cd:<6.3f}\n")
+                
+                del raw, enc_img, dec_img, mask
                 gc.collect()
-
-                # ── Hybrid (CNN + Selective SPECK) ─────────────────────────
-                enc_img, _, dur_h = hybrid_engine.encrypt_adaptive(tmp_img_path)
-                if enc_img is None:
-                    raise ValueError("encrypt_adaptive returned None")
-                ent_h = calculate_entropy(enc_img)
-                del enc_img
-                gc.collect()
-
-                aval_h = calculate_avalanche(hybrid_engine, tmp_img_path)
-                gc.collect()
-
-                # ── Standard SPECK (full-image) ────────────────────────────
-                dur_s, ent_s = run_standard_speck(tmp_img_path, KEY)
-                gc.collect()
-
-                try:
-                    os.remove(tmp_img_path)
-                except OSError:
-                    pass
-
-                # ── Write results (flush after each image so file is always valid) ──
-                f.write(f"{image_name:<20} | Hybrid   | {dur_h:<9.4f} | {ent_h:<8.4f} | {aval_h:<12.2f} | {pixel_count}\n")
-                f.write(f"{'':<20} | Standard | {dur_s:<9.4f} | {ent_s:<8.4f} | {'~50.00 (block)':<12} |\n")
-                f.write("-" * 92 + "\n")
-                f.flush()
-
-                print(f"         Hybrid  → {dur_h:.4f}s | Entropy {ent_h:.4f} | Avalanche {aval_h:.2f}%")
-                print(f"         Standard→ {dur_s:.4f}s | Entropy {ent_s:.4f}")
 
             except Exception as e:
-                msg = str(e)[:60]
-                f.write(f"{image_name:<20} | ERROR    | {msg}\n")
-                f.write("-" * 92 + "\n")
-                f.flush()
-                print(f"         [ERROR] {image_name}: {e}")
+                print(f"Error on {image_name}: {e}")
 
-            gc.collect()   # force-free between every image
+    # Generate Cumulative Report
+    with open(SUMMARY_FILE, "w") as sf:
+        sf.write("CUMULATIVE RESEARCH COMPARISON REPORT\n")
+        sf.write("="*40 + "\n")
+        sf.write(f"Total Images Processed: {len(summary_data['enc_times'])}\n\n")
+        
+        sf.write("AVERAGE PERFORMANCE METRICS:\n")
+        sf.write(f"- Avg Encryption Time: {np.mean(summary_data['enc_times']):.4f} s\n")
+        sf.write(f"- Avg Decryption Time: {np.mean(summary_data['dec_times']):.4f} s\n")
+        sf.write(f"- Avg Entropy:        {np.mean(summary_data['entropy']):.4f}\n")
+        sf.write(f"- Avg NPCR:           {np.mean(summary_data['npcr']):.2f} %\n")
+        sf.write(f"- Avg UACI:           {np.mean(summary_data['uaci']):.2f} %\n")
+        sf.write(f"- Avg PSNR:           {np.mean(summary_data['psnr']):.2f} dB\n\n")
+        
+        sf.write("CORRELATION ANALYSIS (Average):\n")
+        sf.write(f"- Horizontal: {np.mean(summary_data['corr_h']):.4f}\n")
+        sf.write(f"- Vertical:   {np.mean(summary_data['corr_v']):.4f}\n")
+        sf.write(f"- Diagonal:   {np.mean(summary_data['corr_d']):.4f}\n")
 
-        # ── Footer ─────────────────────────────────────────────────────────
-        f.write(f"\nCompleted: {datetime.now():%Y-%m-%d %H:%M:%S}\n")
-        f.write(f"Total images processed: {total}\n")
-
-    print(f"\n{'='*60}")
-    print(f"  Done! Results saved to: {results_file}")
-    print(f"{'='*60}\n")
-
+    print(f"\nCompleted! Results: {RESULTS_FILE}, Summary: {SUMMARY_FILE}")
+    print(f"Histograms: {HIST_PLAIN_DIR}/ and {HIST_ENC_DIR}/")
 
 if __name__ == "__main__":
     run_comprehensive_batch()
