@@ -1,0 +1,386 @@
+﻿========== 24.pdf ==========
+Robust color image watermarking using invariant
+quaternion Legendre-Fourier moments
+Khalid M. Hosny1 & Mohamed M. Darwish2
+Received: 1 August 2017 /Revised: 11 January 2018 /Accepted: 15 January 2018 /
+Published online: 5 March 2018
+# Springer Science+Business Media, LLC, part of Springer Nature 2018
+Abstract In this paper, a geometrically invariant color image watermarking method using
+Quaternion Legendre-Fourier moments (QLFMs) is presented. A highly accurate, fast and
+numerically stable method is proposed to compute the QLFMs in polar coordinates. The
+proposed watermarking method consists of three main steps. First, the Arnold scrambling
+algorithm is applied to a binary watermark image. Second, the QLFMs of the original host
+color image are computed. Third, the binary digital watermark is embedding by performing the
+quantization of selected QLFMs. Two different groups of attacks are considered. The first
+group includes geometric attacks such as rotation, scaling and translation while the second
+group includes the common signal processing attacks such as image compression and noise.
+Experiments are performed where the performance of proposed method is compared with the
+existing moment-based watermarking methods. The proposed method is superior over all
+existing quaternion moment-based watermarking in terms of visual imperceptibility capability
+and robustness to different attacks.
+Keywords Quaternion Legendre-Fourier moments . Color image watermarking . Geometric
+attacks . Rotation invariant
+1 Introduction
+Because of the rapid development advance of modern times, Internet and images, intellectual
+property and image copyright protection have become a prominent problem. Therefore, image
+watermarking technology has become a growing concern and information security has been
+extensively researched and used.
+Multimed Tools Appl (2018) 77:2472724750
+https://doi.org/10.1007/s11042-018-5670-9
+* Khalid M. Hosny
+k_hosny@yahoo.com
+1
+Department of Information Technology, Faculty of Computers and Informatics, Zagazig University,
+Zagazig 44519, Egypt
+2
+Department of Mathematics, Faculty of Science, Assiut University, Assiut 71516, Egypt
+
+Digital watermarks are used in copyright protection and securing data during their trans-
+mission through networked environment [7, 23]. Technically, digital watermarking aims to
+hide a small piece of digital data called a Bdigital watermark^ into the actual digital media such
+as digital images, digital videos and digital audios without significance change of its normal
+usage [17, 47].
+In order to ensure multimedia copyright protection, digital watermarking has been proposed
+as a modern technology used for this and consists in embedding an imperceptible information,
+yet detectable signal in digital multimedia content such as images or video, while it can be
+easily and correctly detected by the watermarking algorithm. Based on their specific security
+purposes, different methods of digital watermarking can be categorized into the following:
+robust, semi-fragile or fragile methods [6, 22, 24]. Digital image watermarking provides an
+efficient protection of digital information for various applications including telemedicine [27],
+e-health [4], medical images [25, 28, 48], online social networks [29], e-governance [15].
+In the last decade, developing robust image watermarking algorithms have the great efforts
+by researchers [20]. Some of the researchers have been proposed watermarking scheme using
+green computing approach [30]. On the other hand, attacks on systems of image watermarking
+have become more complex and sophisticated. In general, these image watermarking systems
+attacks can be classified into geometric distortions and common image processing operations
+like noise [3].
+The embedding, detection and extraction (retrieval) of digital watermark are the main steps
+in the watermarking process. The detection of the digital watermark usually encounters several
+problems such as geometric attacks. Due to its small size, any small attack may lead to failed
+detection of the embedded watermark. Therefore, robustness against geometric attacks is a
+very desirable characteristic.
+During the last two decades, researchers paid their attention to watermarking technology
+based on invariants moments. Alghoniemy and Tewfik [1] first applied image moments to
+image watermarking technology which is robust against RST attacks by using the Hus
+moment invariants. Unfortunately, their method encountered major problems such as instabil-
+ity and poor visual imperceptibility. Since then, a several moment-based watermarking
+algorithms have been proposed.
+Xin et al. [42] and Ismail et
+
+========== 43.pdf ==========
+.
+.
+Latest updates: hps://dl.acm.org/doi/10.1145/2700299
+.
+.
+RESEARCH-ARTICLE
+Robust Color Image Watermarking Using Geometric
+Invariant aternion Polar Harmonic Transform
+HONG-YING YANG, Liaoning Normal University, Dalian, Liaoning,
+China
+.
+XIANG-YANG WANG, Liaoning Normal University, Dalian, Liaoning,
+China
+.
+PAN-PAN NIU, Liaoning Normal University, Dalian, Liaoning, China
+.
+AI-LONG WANG, Liaoning Normal University, Dalian, Liaoning, China
+.
+.
+.
+Open Access Support provided by:
+.
+Liaoning Normal University
+.
+PDF Download
+2700299.pdf
+27 March 2026
+Total Citations: 35
+Total Downloads: 478
+.
+.
+Published: 05 February 2015
+Accepted: 01 October 2014
+Revised: 01 April 2014
+Received: 01 November 2013
+.
+.
+Citation in BibTeX format
+.
+.
+ACM Transactions on Multimedia Computing, Communications, and Applications (TOMM), Volume 11, Issue 3 (February 2015)
+hps://doi.org/10.1145/2700299
+EISSN: 1551-6865
+.
+
+40
+Robust Color Image Watermarking Using Geometric Invariant
+Quaternion Polar Harmonic Transform
+HONG-YING YANG, XIANG-YANG WANG, PAN-PAN NIU, and AI-LONG WANG,
+Liaoning Normal University
+It is a challenging work to design a robust color image watermarking scheme against geometric distortions.
+Moments and moment invariants have become a powerful tool in robust image watermarking owing to
+their image description capability and geometric invariance property. However, the existing moment-based
+watermarking schemes were mainly designed for gray images but not for color images, and detection quality
+and robustness will be lowered when watermark is directly embedded into the luminance component or
+three color channels of color images. Furthermore, the imperceptibility of the embedded watermark is not
+well guaranteed. Based on algebra of quaternions and polar harmonic transform (PHT), we introduced the
+quaternion polar harmonic transform (QPHT) for invariant color image watermarking in this article, which
+can be seen as the generalization of PHT for gray-level images. It is shown that the QPHT can be obtained
+from the PHT of each color channel. We derived and analyzed the rotation, scaling, and translation (RST)
+invariant property of QPHT. We also discussed the problem of color image watermarking using QPHT.
+Experimental results are provided to illustrate the efciency of the proposed color image watermarking
+against geometric distortions and common image processing operations (including color attacks).
+Categories and Subject Descriptors: K.6.5 [Management of Computing and Information Systems]:
+Security and Protection; I.4.9 [Image Processing and Computer Vision]: Applications
+General Terms: Algorithms, Management, Security
+Additional Key Words and Phrases: Color image watermarking, quaternion polar harmonic transform,
+geometric invariance, robustness, imperceptibility
+ACM Reference Format:
+Hong-Ying Yang, Xiang-Yang Wang, Pan-Pan Niu, and Ai-Long Wang. 2015. Robust color image water-
+marking using geometric invariant quaternion polar harmonic transform. ACM Trans. Multimedia Comput.
+Commun. Appl. 11, 3, Article 40 (January 2015), 26 pages.
+DOI: http://dx.doi.org/10.1145/2700299
+1. INTRODUCTION
+Because of the rapid advance of network technology, humans can arbitrarily and eas-
+ily access or distribute any multimedia data from networks. Hence, the protection of
+intellectual property becomes more and more attentive and important for the soci-
+ety. Digital watermarki
+
+========== mathematics-10-01907.pdf ==========
+
+
+Citation: Guilln-Fernndez, O.;
+Tlelo-Cuautle, E.; de la Fraga, L.G.;
+Sandoval-Ibarra, Y.; Nuez-Perez,
+J.-C. An Image Encryption Scheme
+Synchronizing Optimized Chaotic
+Systems Implemented on Raspberry
+Pis. Mathematics 2022, 10, 1907.
+https://doi.org/10.3390/
+math10111907
+Academic Editors: Lingfeng Liu and
+Daniel-Ioan Curiac
+Received: 19 April 2022
+Accepted: 30 May 2022
+Published: 2 June 2022
+Publishers Note: MDPI stays neutral
+with regard to jurisdictional claims in
+published maps and institutional afl-
+iations.
+Copyright:
+ 2022 by the authors.
+Licensee MDPI, Basel, Switzerland.
+This article is an open access article
+distributed
+under
+the
+terms
+and
+conditions of the Creative Commons
+Attribution (CC BY) license (https://
+creativecommons.org/licenses/by/
+4.0/).
+mathematics
+Article
+An Image Encryption Scheme Synchronizing Optimized
+Chaotic Systems Implemented on Raspberry Pis
+Omar Guilln-Fernndez 1
+, Esteban Tlelo-Cuautle 1
+, Luis Gerardo de la Fraga 2
+, Yuma Sandoval-Ibarra 3
+and Jose-Cruz Nuez-Perez 4,*
+1
+Department of Electronics, INAOE, Puebla 72840, Mexico; ing.omargufe@gmail.com (O.G.-F.);
+etlelo@inaoep.mx (E.T.-C.)
+2
+Computer Science Department, CINVESTAV, Av. IPN 2508, Mexico City 07360, Mexico; fraga@cs.cinvestav.mx
+3
+Departamento de Posgrado, Universidad Politcnica de Lzaro Crdenas, Michoacn, Km 1+564 Carretera La
+Orilla-La Mira s/n, Col. 5 de Mayo, Lzaro Crdenas 60950, Mexico; yumasandoval@uplc.edu.mx
+4
+Instituto Politcnico Nacional, IPN-CITEDI, Av. Instituto Politcnico Nacional No. 1310,
+Tijuana 22435, Mexico
+*
+Correspondence: nunez@citedi.mx; Tel.: +52-55-5729-6000
+Abstract: Guaranteeing security in information exchange is a challenge in public networks, such
+as in the highly popular application layer Message Queue Telemetry Transport (MQTT) protocol.
+On the one hand, chaos generators have shown their usefulness in masking data that can be recovered
+while having the appropriate binary string. Privacy can then be accomplished by implementing syn-
+chronization techniques to connect the transmitter and receiver, among millions of users, to encrypt
+and decrypt data having the correct public key. On the other hand, chaotic binary sequences can be
+generated on Rapsberry Pis that can be connected over MQTT. To provide privacy and security, the
+transmitter and receiver (among millions of devices) can be synchronized to have the same chaotic
+public key to encrypt and decrypt data. In this manner, this paper shows the implementation of
+opt
+Mathematics 2022, 10, 1907
+2 of 23
+a publishsubscribe model (https://mqtt.org/ (accessed on 1 March 2022)), where nei-
+ther have notions about the existence of the other and rely on a third party, called the
+broker, who distributes the messages to all connected devices. Therefore, the publisher
+only needs to send its data once without knowing how many subscribers will be served
+by the broker. For instance, the authors in [11] used fractional-order chaotic maps for
+secure communication in IoT-based smart devices. Fractional-order chaotic systems can be
+synchronized, but recent works just synchronized masterslave topologies [12,13]. The chal-
+lenge is synchronizing any number of devices to share secure data on public networks and
+guaranteeing privacy. Herein, we propose the use of chaotic binary strings to synchronize
+a publisher (transmitter) with any number of subscribers (receivers) so that the data can be
+recovered just by the subscriber having the correct chaotic binary string (public key), while
+the remaining connected devices can read a kind of noisy data.
+Chaotic systems have been implemented in different analog and digital electronic
+devices [7], and in both cases, the exactness depends on the numerical method or approx-
+imation to solve the fractional-order derivatives. This paper shows the implementation
+of chaotic systems using Raspberry Pis (RPis) to exploit their computer-on-board capabil-
+ities. In this manner, each RPi is ready to generate chaotic binary strings to encrypt and
+decrypt an image that can be processed wirelessly over MQTT for the IoT protocol. Chaotic
+systems can also be designed using integrated circuit technology, as shown in [1417].
+The challenges are related to the design of low-power IoT devices for lightweight applica-
+tions and the development of secure and private communication systems. In this manner,
+to guarantee privacy, this paper shows the synchronization of a publisher (transmitter) with
+multiple subscribers (receivers) using chaotic binary strings in MQTT for the IoT protocol.
+We also perform National Institute of Standards and Technology (NIST) and TestU01 tests
+to guarantee the randomness of the chaotic binary strings and perform other statistical
+analyses to avoid attacks for the encryption and decryption of images. The encryption
+system is implemented using IoT devices such as RPis.
+The rest of the paper is organized as follows. Section 2 summarizes the classication
+of chaotic systems and their optimization an
+
+========== s10791-026-09942-w.pdf ==========
+RESEARCH
+Open Access
+ The Author(s) 2026. Open Access  This article is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International 
+License, which permits any non-commercial use, sharing, distribution and reproduction in any medium or format, as long as you give appropriate 
+credit to the original author(s) and the source, provide a link to the Creative Commons licence, and indicate if you modified the licensed material. 
+You do not have permission under this licence to share adapted material derived from this article or parts of it. The images or other third party 
+material in this article are included in the articles Creative Commons licence, unless indicated otherwise in a credit line to the material. If material 
+is not included in the articles Creative Commons licence and your intended use is not permitted by statutory regulation or exceeds the permitted 
+use, you will need to obtain permission directly from the copyright holder. To view a copy of this licence, visit http://creativecommons.org/licens
+es/by-nc-nd/4.0/.
+Afzal et al. Discover Computing           (2026) 29:65 
+https://doi.org/10.1007/s10791-026-09942-w
+*Correspondence:
+Mohammad Luqman
+mdluqman@myamu.ac.in
+1Department of Computer Science, 
+Aligarh Muslim University, Aligarh, 
+U.P 202002, India
+2School of Computer Science and 
+Engineering, Galgotias University, 
+Greater Noida, India
+Lightweight CNN-based edge computing 
+with hybrid chaotic encryption for secure 
+and efficient image transmission in IoT 
+networks
+ShahnwazAfzal1, Mohammad UbaidullahBokhari1, MohammadLuqman1* and BasilHanafi2
+Discover Computing
+Abstract
+While IoT Devices are used in Governmental organizations to send data to Cloud 
+services, there are several Issues with conventional communication methods 
+used to connect devices.1) The secure transmission of confidential Images is not 
+guaranteed.2) Limitations of Memory, Computation, and Bandwidth are present 
+on IoT devices. This Paper presents the development of a framework for the 
+secure transmission of confidential images in real-time in Indian Government IoT 
+Environments using a CNN-assisted Selective Encryption Framework. An Edge-based 
+CNN, which consumes minimal processing power to classify images into either 
+Sensitive or Non-sensitive, is employed to perform automatic classification of digital 
+images. Once classified by the CNN, the Sensitive images will be transmitted using 
+a Chaotic Hybrid encryption scheme in conjunction with t
+Page 2 of 31
+Afzal et al. Discover Computing           (2026) 29:65 
+1 Introduction
+Actuators and sensors enable physical devices compatible with the Internet of Things 
+(IoT) to interact and communicate data. This integrated ecosystem encompasses 
+healthcare, smart homes, industrial automation, and government services, facilitating 
+real-time monitoring, automation, and decision-making guidance [1, 2]. Government 
+infrastructure increasingly employs IoT devices to collect and transmit substantial quan
+tities of image-based data, including financial credentials, identification proofs, PAN 
+cards, and Aadhaar cards, which contain sensitive personal information. The surge in 
+image data poses considerable challenges for scalable, secure, and efficient process
+ing. Government offices have traditionally relied on manual data processing; however, 
+the Internet of Things has facilitated rapid digitalization and service automation. This 
+highlights the importance of assurances regarding data integrity and confidentiality. 
+Nevertheless, contemporary IoT systems possess inherent limitations. The resource 
+constraints, including limited computational capacity, memory, and energy, of most 
+IoT devices render robust encryption approaches inapplicable to all data universally. 
+Furthermore, the perpetual encryption of all data, irrespective of its sensitivity, incurs 
+additional expenses and diminishes system performance. We have examined lightweight 
+cryptographic algorithms such as AES [3], Grain-128 [4], Grain-80 [5], Lizard [6], Rab
+bit [7], Trivium [8], and Salsa20 [9], notwithstanding the absence of dynamic alterations 
+in data sensitivity or processing constraints at the edge. However, traditional algorithms 
+were not designed for image encryption, so an inquiry was conducted into many supple
+mentary methodologies specifically designed for image security. Their significant pro
+cessing complexity makes them unsuitable for real-time image applications. DNA-based 
+image encryption algorithms offer dual-layer security; nonetheless, they necessitate 
+considerable computational power. Watermarking and cellular automaton-based light
+weight encryption models exist; however, they are either non-scalable or produce image 
+distortion. Some research has proposed different medical picture encryption solutions 
+[10]. present a chaos-based encryption technique employing diffusion from a logistic 
+map. Although this method improved randomization, its deterministic nature left i
+
+========== s11042-021-10932-x.pdf ==========
+An efficient CNN based encrypted Iris recognition
+approach in cognitive-IoT system
+Ahmed Sabry Shalaby1 & Ramadan Gad1 & Ezz El-Din Hemdan1 & Nawal El-Fishawy1
+# The Author(s), under exclusive licence to Springer Science+Business Media, LLC, part of Springer Nature 2021
+Abstract
+Recently, biometric-based security plays a vital role in the success of the Cognitive
+Internet of Things (C-IoT) based security framework. The iris trait solves a lot of
+security issues, especially in smart IoT-based applications. It increases the resistance
+of these systems against severe authentication attacks. In this paper, an efficient iris
+recognition model based on chaotic encryption and deep Convolutional Neural
+Networks (CNNs) is proposed for C-IoT applications. CNN is used to extract the
+deep iris features from the left and right eyes, which will be used as input features to a
+fully connected neural network with a Softmax classifier. CASIA V4 Interval dataset
+and Phoenix dataset are used to train the CNN model; to get the best tuning of
+network parameters. In this paper, the effect of adding different kinds of noise to iris
+images, due to noise interference related to sensing IoT devices, bad acquisition of iris
+images by system users, or other system assaults, is discussed. This strategy of noisy
+encrypted iris images is evaluated over the internet environment. Chaotic encryption
+is utilized to secure the transmission of iris templates in the proposed model. The
+results showed that the proposed approach attains supreme accuracy compared to the
+existing approaches, it is obtained up to 99.24% and 100% with CASIA V4 and
+Phoenix datasets, respectively. The proposed model achieves satisfied and competi-
+tive results regard accuracy, and robustness among existing methods. Regards to
+recognition accuracy rate, this methodology shows low degradation of recognition
+accuracy rates in the case of using noised iris images. Likewise, the proposed method
+has a relatively low training time, which is a useful parameter in critical IoT based
+uses such as Tele-Medicine application.
+Keywords Biometrics.Irisrecognition.Deeplearning.Convolutionalneuralnetworks.Chaotic
+encryption . Cognitive IoT
+https://doi.org/10.1007/s11042-021-10932-x
+* Ezz El-Din Hemdan
+ezzvip@yahoo.com
+Extended author information available on the last page of the article
+Multimedia Tools and Applications (2021) 80:2627326296
+Received: 13 August 2020 /Revised: 25 January 2021 /Accepted: 13 April 2021 / 
+Published online:
+1 Introduction
+Currently, most modern advanced technologies such as cloud computing [15] and the Internet
+of Things [4, 15, 16] mostly depends on the use of the network and Internet services for
+multimedia communications. In the last years, most of our daily applications are based on IoT
+systems where several devices and sensors are connected. These applications produce a huge
+amount of data. The IoT applications are considered the source of the biggest kind of
+information on the internet, so identity verification becomes a very crucial and very challeng-
+ing task when it has to be automated with high accuracy of recognition rates and low
+probability of break-ins in IoT systems [8]. The community has adopted several ways to
+verify the identity of a person through traditional ways [37], like physical possessions of
+special objects or having pieces of information that are supposed to be kept secret. There is a
+third way to verify the identity of a person using biometrics [22]. Iris is considered the most
+accurate trait available today; because of its desirable characteristics [9].
+A biometric recognition problem is a special kind of pattern recognition or classification
+problem which has a very long history [26], in which we need to make a classifier to a set of
+classes of data. There is a need to extract the best features that represent the data, to facilitate
+the role of the classifier, and reduce its complexity. Designing handcrafted feature extractors
+for biometric data is a very complex and challenging task [7]. It takes a lot of time and it needs
+a great knowledge of the field that governs these data, and it is not guaranteed to achieve high
+accuracy of recognition rate. Deep learning [11, 20] came into the picture, especially
+Convolutional Neural Networks (CNNs) which can give us a very good understanding of
+image data without depending completely on any domain knowledge and handcrafted features.
+Recently, the key challenge of researchers - in using the deep learning approach, especially
+CNNs in biometrics - is that they usually use a pre-trained model of CNNs. These models are
+trained on a very large number of data classes that exclude iris classes themselves and using
+these models as a black box. So, using these pre-trained models as they are also is not
+guaranteed to achieve high accuracy recognition rates because of the loss of the biometric
+information which was not used in the training stage of these models. It is very difficult to
+modify these 
+

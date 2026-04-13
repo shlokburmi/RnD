@@ -77,6 +77,7 @@ class IntegratedSecureSpeck:
         
         # 3. Dynamic Key Generation (Enhanced Security)
         # We select ROI pixels without a full bitmask copy if possible
+        channels = img.shape[2] if len(img.shape) == 3 else 1
         roi_indices = np.where(mask == 1)
         roi_pixels = img[roi_indices]
         
@@ -89,8 +90,8 @@ class IntegratedSecureSpeck:
         
         # In-place update of image to save RAM
         # Truncate or pad to match the original ROI pixel count
-        enc_roi_array = np.frombuffer(encrypted_roi[:len(roi_pixels) * img.shape[2]], dtype=np.uint8)
-        img[roi_indices] = enc_roi_array.reshape(-1, img.shape[2])
+        enc_roi_array = np.frombuffer(encrypted_roi[:roi_pixels.size], dtype=np.uint8)
+        img[roi_indices] = enc_roi_array.reshape(roi_pixels.shape)
         
         # 4. Fast Background Diffusion
         bg_indices = np.where(mask == 0)
@@ -100,13 +101,17 @@ class IntegratedSecureSpeck:
         keystream = hashlib.sha256(self.key).digest()
         # Vectorized XOR for background
         # Note: For large backgrounds on 1GB RAM, this chunking is vital
-        chunk_size = 1000000 # 1MB chunks
+        chunk_size = 1000000 // channels # Adjust chunk size by channels
         for i in range(0, len(bg_pixels), chunk_size):
             end = min(i + chunk_size, len(bg_pixels))
-            # Dynamic keystream padding
-            ks_len = (end - i)
+            # Dynamic keystream padding - must cover all channels
+            ks_len = (end - i) * channels
             ks = (keystream * (ks_len // 32 + 1))[:ks_len]
-            img[bg_indices[0][i:end], bg_indices[1][i:end], :] ^= np.frombuffer(ks, dtype=np.uint8).reshape(-1, img.shape[2])
+            
+            if channels > 1:
+                img[bg_indices[0][i:end], bg_indices[1][i:end], :] ^= np.frombuffer(ks, dtype=np.uint8).reshape(-1, channels)
+            else:
+                img[bg_indices[0][i:end], bg_indices[1][i:end]] ^= np.frombuffer(ks, dtype=np.uint8)
 
         end_time = time.perf_counter()
         
