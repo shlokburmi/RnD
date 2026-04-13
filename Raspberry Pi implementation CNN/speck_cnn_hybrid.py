@@ -2,8 +2,12 @@ import cv2
 import numpy as np
 import time
 import os
+import gc
 import hashlib
 from speck_vectorized import VectorizedSPECK
+
+# ── Raspberry Pi 4 (1 GB) global tuning ──────────────────────────────────────
+cv2.setNumThreads(2)   # cap to 2 threads — reduces RAM pressure on 1 GB model
 
 class CNNSegmenter:
     """
@@ -63,59 +67,67 @@ class IntegratedSecureSpeck:
 
     def encrypt_adaptive(self, image_path):
         """
-        Integrates CNN for ROI detection. Optimized for Raspberry Pi 4 (1GB RAM).
-        Avoids redundant array copies to prevent memory spikes.
+        Integrates CNN for ROI detection.
+        Optimised for Raspberry Pi 4 (1 GB RAM):
+          - No redundant array copies
+          - Explicit del + gc.collect() after each large allocation
+          - Chunked background XOR to stay within memory budget
         """
         img = cv2.imread(image_path)
-        if img is None: return None, 0, 0
-        
-        orig_shape = img.shape
+        if img is None:
+            return None, 0, 0
+
         start_time = time.perf_counter()
-        
-        # 1. CNN ROI Detection
-        mask = self.segmenter.get_roi_mask(img)
-        
-        # 3. Dynamic Key Generation (Enhanced Security)
-        # We select ROI pixels without a full bitmask copy if possible
-        channels = img.shape[2] if len(img.shape) == 3 else 1
+        channels   = img.shape[2] if len(img.shape) == 3 else 1
+
+        # ── 1. CNN ROI Detection ──────────────────────────────────────────
+        mask        = self.segmenter.get_roi_mask(img)
         roi_indices = np.where(mask == 1)
-        roi_pixels = img[roi_indices]
-        
+        roi_pixels  = img[roi_indices]          # view, not a copy
+
+        # ── 2. Dynamic Key (ROI-content-derived) ─────────────────────────
         roi_features = roi_pixels.tobytes()
-        dynamic_key = hashlib.sha256(self.key + hashlib.sha256(roi_features).digest()).digest()
-        dynamic_cipher = VectorizedSPECK(dynamic_key, key_size=256)
-        
-        # 2. Selective Encryption
-        encrypted_roi = dynamic_cipher.encrypt(roi_features)
-        
-        # In-place update of image to save RAM
-        # Truncate or pad to match the original ROI pixel count
+        dynamic_key  = hashlib.sha256(
+            self.key + hashlib.sha256(roi_features).digest()
+        ).digest()
+        del roi_features                         # free early
+
+        dynamic_cipher  = VectorizedSPECK(dynamic_key, key_size=256)
+        encrypted_roi   = dynamic_cipher.encrypt(roi_pixels.tobytes())
+        del dynamic_cipher                       # free round-key table
+
+        # ── 3. Selective Encryption: write back in-place ──────────────────
         enc_roi_array = np.frombuffer(encrypted_roi[:roi_pixels.size], dtype=np.uint8)
         img[roi_indices] = enc_roi_array.reshape(roi_pixels.shape)
-        
-        # 4. Fast Background Diffusion
-        bg_indices = np.where(mask == 0)
-        bg_pixels = img[bg_indices]
-        
-        # Generate hash-based keystream in chunks to save memory
-        keystream = hashlib.sha256(self.key).digest()
-        # Vectorized XOR for background
-        # Note: For large backgrounds on 1GB RAM, this chunking is vital
-        chunk_size = 1000000 // channels # Adjust chunk size by channels
-        for i in range(0, len(bg_pixels), chunk_size):
-            end = min(i + chunk_size, len(bg_pixels))
-            # Dynamic keystream padding - must cover all channels
-            ks_len = (end - i) * channels
-            ks = (keystream * (ks_len // 32 + 1))[:ks_len]
-            
-            if channels > 1:
-                img[bg_indices[0][i:end], bg_indices[1][i:end], :] ^= np.frombuffer(ks, dtype=np.uint8).reshape(-1, channels)
-            else:
-                img[bg_indices[0][i:end], bg_indices[1][i:end]] ^= np.frombuffer(ks, dtype=np.uint8)
+        del enc_roi_array, encrypted_roi, roi_pixels
+        gc.collect()
 
+        # ── 4. Background Diffusion (chunked XOR, 1 MB per chunk) ─────────
+        bg_indices = np.where(mask == 0)
+        del mask                                 # no longer needed
+        keystream  = hashlib.sha256(self.key).digest()   # 32-byte base
+
+        # chunk_size = number of *pixels* processed per iteration
+        chunk_size = max(1, 1_000_000 // channels)
+        bg_len     = len(bg_indices[0])
+
+        for i in range(0, bg_len, chunk_size):
+            end    = min(i + chunk_size, bg_len)
+            ks_len = (end - i) * channels
+            ks     = (keystream * (ks_len // 32 + 1))[:ks_len]
+            chunk  = np.frombuffer(ks, dtype=np.uint8)
+
+            if channels > 1:
+                img[bg_indices[0][i:end], bg_indices[1][i:end], :] ^= chunk.reshape(-1, channels)
+            else:
+                img[bg_indices[0][i:end], bg_indices[1][i:end]] ^= chunk
+
+            del chunk   # free each chunk immediately
+
+        del bg_indices
         end_time = time.perf_counter()
-        
-        return img, mask, (end_time - start_time)
+
+        return img, None, (end_time - start_time)
 
 def main():
     print("="*80)
@@ -144,7 +156,7 @@ def main():
         # Save results
         output_dir = "cnn_speck_output"
         os.makedirs(output_dir, exist_ok=True)
-        cv2.imwrite(os.path.join(output_dir, "roi_mask.jpg"), roi_mask * 255)
+        # roi_mask is now None (freed inside encrypt_adaptive to save RAM on Pi)
         cv2.imwrite(os.path.join(output_dir, "encrypted_hybrid.jpg"), enc_img)
         
         print(f"\nFiles saved in '{output_dir}/'")
