@@ -1,0 +1,49 @@
+CUMULATIVE RESEARCH COMPARISON REPORT
+========================================
+Total Images Processed: 6000
+
+ALGORITHM: SCALAR-16
+----------------------------------------
+AVERAGE PERFORMANCE METRICS:
+- Avg Encryption Time: 0.5185 s
+- Avg Decryption Time: 0.5938 s
+- Avg Entropy:        7.9998
+- Avg NPCR:           0.00 %
+- Avg UACI:           0.00 %
+- Avg PSNR:           100.00 dB
+
+CORRELATION ANALYSIS (Average):
+- Horizontal: 0.0002
+- Vertical:   0.0006
+- Diagonal:   -0.0001
+
+ALGORITHM: VECTORIZED
+----------------------------------------
+AVERAGE PERFORMANCE METRICS:
+- Avg Encryption Time: 0.0195 s
+- Avg Decryption Time: 0.0183 s
+- Avg Entropy:        7.9998
+- Avg NPCR:           0.00 %
+- Avg UACI:           0.00 %
+- Avg PSNR:           100.00 dB
+
+CORRELATION ANALYSIS (Average):
+- Horizontal: 0.0003
+- Vertical:   0.0004
+- Diagonal:   0.0000
+
+ALGORITHM: SPECKCNN
+----------------------------------------
+AVERAGE PERFORMANCE METRICS:
+- Avg Encryption Time: 0.0284 s
+- Avg Decryption Time: 0.0182 s
+- Avg Entropy:        7.9936
+- Avg NPCR:           99.61 %
+- Avg UACI:           33.76 %
+- Avg PSNR:           8.73 dB
+
+CORRELATION ANALYSIS (Average):
+- Horizontal: -0.0055
+- Vertical:   0.0081
+- Diagonal:   0.0041
+
